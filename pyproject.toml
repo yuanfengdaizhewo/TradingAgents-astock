@@ -46,6 +46,11 @@ dependencies = [
 # 依赖链为 claude-agent-sdk → mcp → httpx2，**不碰 httpx**，故与 mootdx 的
 # httpx<0.26 无冲突（已 uv lock 实测）——与 #87 移除的 [google] 情况不同。
 agentsdk = ["claude-agent-sdk>=0.2.82"]
+# 测试依赖。**必须单独声明**：pytest 不在运行时依赖里，而 README / CLAUDE.md 都把
+# `python -m pytest tests/` 当作回归判据——没有这个 extra，新 clone 下来直接
+# `No module named pytest`，基线根本跑不起来（CI 装 `pip install -e ".[test]"`）。
+# pytest 是纯 Python 包、依赖无冲突，因此不会重蹈 #87 那个 uv universal lock 的坑。
+test = ["pytest>=8.0"]
 
 [project.urls]
 Homepage = "https://github.com/simonlin1212/tradingagents-astock"

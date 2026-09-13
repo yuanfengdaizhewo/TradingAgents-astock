@@ -98,8 +98,12 @@ alpha | holding]` 结构，且 holding 带 `d` 后缀）。
 deepseek-v4-flash 等模型在 tool call 时可能返回中文股票名而非 6 位代码。`safe_ticker_component` 已加兜底自动转码，但不同模型表现仍有差异。
 
 ### 测试
-**干净 clone（`pip install -e .` 不带 `[agentsdk]`）跑 `pytest tests/` 应当是
-361 passed / 13 skipped / **0 failed**。出现 failed 就是真回归。**
+**干净 clone（`pip install -e ".[test]"` 不带 `[agentsdk]`）跑 `pytest tests/` 必须是
+**0 failed**。出现 failed 就是真回归。**
+⚠️ **只有 `0 failed` 才是判据，passed/skipped 的具体数字会随新增用例增长**——别把某个
+数字当成基准（本文档曾写死 361/13，实际在 0.5.17 + Python 3.13.9 上已是 378 passed /
+14 skipped，导致下一个照做的人以为是自己改坏了）。数字对不上时先看是不是有人加了用例。
+不在运行时依赖里的 pytest 由 `[test]` extra 提供。
 需要可选依赖的用例用 `requires_sdk` 标记跳过——⚠️ **占位类型绝不要用 `Exception`
 基类**：`ClaudeSDKError` 曾被占位成 `Exception`，进 `_FALLBACK_ERRORS` 后让"订阅凭据
 失效不得降级到计费 provider"这条护栏彻底失效（v0.5.4 修）。

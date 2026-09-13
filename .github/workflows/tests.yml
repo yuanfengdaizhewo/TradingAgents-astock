@@ -1,0 +1,37 @@
+name: tests
+
+# 这个仓库原本没有 CI：文档把 `pytest tests/` 当作唯一的回归判据，却只能靠人自觉跑，
+# 而 pytest 连依赖组都没声明（见 pyproject.toml 的 [test] extra）。
+# 本 workflow 把"改完必须跑测试"从自觉变成强制 —— 红叉贴在 PR 上，不绿不合。
+#
+# 成本：公开仓库的 GitHub Actions 免费不限时长。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install (runtime + test extra)
+        run: python -m pip install -e ".[test]"
+
+      # 全部用例都把网络 mock 掉了（_probe_tdx / Quotes / _em_get /
+      # _sina_kline_fallback），因此可离线运行。
+      # `-m "not integration"` 当前不会跳过任何用例（仓库里还没有 integration 标记的
+      # 用例），它是给将来新增的真·联网用例留的开关 —— 那类用例在 CI 上会因网络抖动
+      # 假红，应打上 @pytest.mark.integration。
+      - name: Test
+        run: python -m pytest tests/ -q -m "not integration"
